@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div>
+        <h1>Todo App</h1>
+        <div id="todoContainer">Fetching From Api URL...</div>
+    </div>
+
+    <script>
+        const apiUrl = 'https://jsonplaceholder.typicode.com/todos';
+        let localArray = [];
+        const container = document.getElementById('todoContainer');
+
+
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl, { method: 'GET' });
+                if (!response.ok) throw new Error('Failed to fetch posts');
+                
+                const data = await response.json();
+                localArray = data.slice(0, 10); 
+                renderData();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        async function deleteData(id) {
+            try {
+                const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Failed to delete post');
+                
+                
+                localArray = localArray.filter(todo => todo.id !== id);
+                renderData();
+            } 
+            catch (error) {
+                console.error('Error deleting data:', error);
+            }
+        }
+
+        
+
+        function renderData() {
+            container.innerHTML = ''; 
+
+            if (localArray.length === 0) {
+                container.innerHTML = '<p class="loading-text">No todos available to display.</p>';
+                return;
+            }
+
+            localArray.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.classList.add('todo-item');
+                todoItem.innerHTML = `
+                    <h3>Task Title: ${todo.title}</h3>
+                    <p>Status: ${todo.completed ? 'Completed' : 'Pending'}</p>
+                    <button class="delete-btn" onclick="deleteData(${todo.id})">Delete</button>
+                `;
+                container.appendChild(todoItem);
+            });
+        }
+
+        
+    
+        fetchData();
+    </script>
+</body>
+</html>
