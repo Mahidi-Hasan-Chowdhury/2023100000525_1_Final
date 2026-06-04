@@ -17,7 +17,6 @@
         let localArray = [];
         const container = document.getElementById('todoContainer');
 
-
         async function fetchData() {
             try {
                 const response = await fetch(apiUrl, { method: 'GET' });
@@ -36,16 +35,33 @@
                 const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
                 if (!response.ok) throw new Error('Failed to delete post');
                 
-                
                 localArray = localArray.filter(todo => todo.id !== id);
                 renderData();
-            } 
-            catch (error) {
+            } catch (error) {
                 console.error('Error deleting data:', error);
             }
         }
 
-        
+        async function toggleData(id) {
+            try {
+                const todoItem = localArray.find(todo => todo.id === id);
+                if (!todoItem) return;
+
+                const updatedStatus = !todoItem.completed;
+
+                const response = await fetch(`${apiUrl}/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: updatedStatus })
+                });
+                if (!response.ok) throw new Error('Failed to patch update');
+
+                todoItem.completed = updatedStatus;
+                renderData();
+            } catch (error) {
+                console.error('Error toggling status:', error);
+            }
+        }
 
         function renderData() {
             container.innerHTML = ''; 
@@ -60,14 +76,13 @@
                 todoItem.classList.add('todo-item');
                 todoItem.innerHTML = `
                     <h3>Task Title: ${todo.title}</h3>
-                    <p>Status: ${todo.completed ? 'Completed' : 'Pending'}</p>
+                    <p>Status: <span>${todo.completed ? 'Completed' : 'Pending'}</span></p>
+                    <button class="toggle-btn" onclick="toggleData(${todo.id})">Toggle Status</button>
                     <button class="delete-btn" onclick="deleteData(${todo.id})">Delete</button>
                 `;
                 container.appendChild(todoItem);
             });
         }
-
-        
     
         fetchData();
     </script>
